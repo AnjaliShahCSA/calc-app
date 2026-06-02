@@ -1,27 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple Calculator App</title>
+    <title>Calculation App</title>
+
     <style>
         body {
             font-family: Arial;
+            background: #f4f6f8;
             text-align: center;
             margin-top: 50px;
         }
-        input {
-            padding: 10px;
-            margin: 5px;
+
+        .container {
+            background: white;
+            padding: 30px;
+            width: 300px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
         }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: gray;
+        }
+
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
         button {
             padding: 10px 20px;
             background: blue;
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
         }
+
         #result {
             margin-top: 20px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
         }
     </style>
@@ -29,27 +53,48 @@
 
 <body>
 
-    <h1>Calculation App</h1>
+<div class="container">
 
+    <h1>My Calculator</h1>
+    <p>Enter values and select operation</p>
+
+    <label>First Number</label><br>
     <input id="num1" type="number" placeholder="Enter first number">
-    <input id="num2" type="number" placeholder="Enter second number">
-    <br>
 
+    <label>Second Number</label><br>
+    <input id="num2" type="number" placeholder="Enter second number">
+
+    <label>Operation</label><br>
+    <select id="operation">
+        <option value="add">Add (+)</option>
+        <option value="subtract">Subtract (-)</option>
+        <option value="multiply">Multiply (×)</option>
+        <option value="divide">Divide (÷)</option>
+    </select>
+
+    <br><br>
     <button onclick="calculate()">Calculate</button>
 
     <div id="result"></div>
 
-    <script>
-        function calculate() {
-            let n1 = parseFloat(document.getElementById("num1").value);
-            let n2 = parseFloat(document.getElementById("num2").value);
+</div>
 
-            let result = n1 + n2;
+<script>
+function calculate() {
+    let n1 = parseFloat(document.getElementById("num1").value);
+    let n2 = parseFloat(document.getElementById("num2").value);
+    let op = document.getElementById("operation").value;
 
-            document.getElementById("result").innerText = 
-                "Result: " + result;
-        }
-    </script>
+    let result;
+
+    if (op === "add") result = n1 + n2;
+    else if (op === "subtract") result = n1 - n2;
+    else if (op === "multiply") result = n1 * n2;
+    else if (op === "divide") result = n2 !== 0 ? n1 / n2 : "Cannot divide by zero";
+
+    document.getElementById("result").innerText = "Result: " + result;
+}
+</script>
 
 </body>
 </html>
