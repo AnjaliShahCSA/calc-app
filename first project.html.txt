@@ -1,52 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Calculation App</title>
+    <title>Composite Beam Calculator</title>
 
     <style>
         body {
             font-family: Arial;
-            background: #f4f6f8;
+            background: #eef2f7;
             text-align: center;
-            margin-top: 50px;
+            margin-top: 30px;
         }
 
         .container {
             background: white;
-            padding: 30px;
-            width: 300px;
+            padding: 25px;
+            width: 420px;
             margin: auto;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            margin-bottom: 10px;
-        }
-
-        p {
-            color: gray;
-        }
-
-        input, select {
+        select, input {
             width: 90%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 8px;
+            margin: 8px 0;
         }
 
         button {
             padding: 10px 20px;
-            background: blue;
+            background: #0078D4;
             color: white;
             border: none;
-            cursor: pointer;
             border-radius: 5px;
         }
 
-        #result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
+        #result, #steelData {
+            margin-top: 15px;
+            text-align: left;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -55,24 +46,24 @@
 
 <div class="container">
 
-    <h1>My Calculator</h1>
-    <p>Enter values and select operation</p>
+    <h2>Composite Beam Tool</h2>
 
-    <label>First Number</label><br>
-    <input id="num1" type="number" placeholder="Enter first number">
-
-    <label>Second Number</label><br>
-    <input id="num2" type="number" placeholder="Enter second number">
-
-    <label>Operation</label><br>
-    <select id="operation">
-        <option value="add">Add (+)</option>
-        <option value="subtract">Subtract (-)</option>
-        <option value="multiply">Multiply (×)</option>
-        <option value="divide">Divide (÷)</option>
+    <h3>Steel Profile</h3>
+    <select id="steelSelect" onchange="updateSteel()">
+        <option value="">-- Select Profile --</option>
+        <option value="IPE200">IPE 200</option>
+        <option value="IPE300">IPE 300</option>
+        <option value="HEA200">HEA 200</option>
+        <option value="HEA300">HEA 300</option>
     </select>
 
-    <br><br>
+    <div id="steelData"></div>
+
+    <h3>Concrete Slab</h3>
+    <input id="width" type="number" placeholder="Slab Width (mm)">
+    <input id="thickness" type="number" placeholder="Slab Thickness (mm)">
+    <input id="Ec" type="number" placeholder="Concrete Modulus Ec (MPa)">
+
     <button onclick="calculate()">Calculate</button>
 
     <div id="result"></div>
@@ -80,20 +71,73 @@
 </div>
 
 <script>
-function calculate() {
-    let n1 = parseFloat(document.getElementById("num1").value);
-    let n2 = parseFloat(document.getElementById("num2").value);
-    let op = document.getElementById("operation").value;
 
-    let result;
+const steelProfiles = {
+    "IPE200": { As: 2620, Es: 210000, h: 200 },
+    "IPE300": { As: 5380, Es: 210000, h: 300 },
+    "HEA200": { As: 5890, Es: 210000, h: 190 },
+    "HEA300": { As: 11200, Es: 210000, h: 290 }
+};
 
-    if (op === "add") result = n1 + n2;
-    else if (op === "subtract") result = n1 - n2;
-    else if (op === "multiply") result = n1 * n2;
-    else if (op === "divide") result = n2 !== 0 ? n1 / n2 : "Cannot divide by zero";
+let selectedSteel = null;
 
-    document.getElementById("result").innerText = "Result: " + result;
+function updateSteel() {
+    let selected = document.getElementById("steelSelect").value;
+
+    if (selected === "") {
+        document.getElementById("steelData").innerHTML = "";
+        selectedSteel = null;
+        return;
+    }
+
+    selectedSteel = steelProfiles[selected];
+
+    document.getElementById("steelData").innerHTML =
+        "<b>Steel Properties:</b><br>" +
+        "Area (As): " + selectedSteel.As + " mm²<br>" +
+        "Depth (h): " + selectedSteel.h + " mm<br>" +
+        "Es: " + selectedSteel.Es + " MPa";
 }
+
+function calculate() {
+
+    if (!selectedSteel) {
+        document.getElementById("result").innerText = "Select a steel profile.";
+        return;
+    }
+
+    let width = parseFloat(document.getElementById("width").value);
+    let thickness = parseFloat(document.getElementById("thickness").value);
+    let Ec = parseFloat(document.getElementById("Ec").value);
+
+    if (isNaN(width) || isNaN(thickness) || isNaN(Ec)) {
+        document.getElementById("result").innerText = "Enter slab details.";
+        return;
+    }
+
+    let As = selectedSteel.As;
+    let Es = selectedSteel.Es;
+    let h = selectedSteel.h;
+
+    let Ac = width * thickness;
+
+    let n = Es / Ec;
+
+    let Ac_trans = Ac * n;
+
+    // centroid positions (from bottom of steel)
+    let ys = h / 2;
+    let yc = h + thickness / 2;
+
+    let ybar = (As * ys + Ac_trans * yc) / (As + Ac_trans);
+
+    document.getElementById("result").innerHTML =
+        "<b>Results:</b><br>" +
+        "Concrete Area: " + Ac.toFixed(0) + " mm²<br>" +
+        "Modular Ratio (n): " + n.toFixed(2) + "<br>" +
+        "Neutral Axis (ȳ): " + ybar.toFixed(2) + " mm from bottom<br>";
+}
+
 </script>
 
 </body>
